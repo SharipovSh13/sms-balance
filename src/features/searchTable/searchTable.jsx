@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -33,6 +33,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/kit/table";
+import { useSelector, useDispatch } from "react-redux";
+import { getSearch } from "@/entities/searchTable/api/searchApi.js";
 
 // ==========================
 //       COLUMNS (JSX)
@@ -58,25 +60,26 @@ export const columns = [
       <div className="capitalize">{row.getValue("history")}</div>
     ),
   },
-
   {
     accessorKey: "get_balance",
-    header: () => <div className="text-start">Баланс</div>,
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("get_balance"));
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount);
-
-      return <div className="text-start font-medium">{formatted}</div>;
-    },
+    header: "Баланс",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("get_balance") ? row.getValue("get_balance") : `$ 0`}
+      </div>
+    ),
   },
   {
     accessorKey: "action",
     header: "Действия",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("action")}</div>
+    cell: () => (
+      <div className="capitalize">
+        {
+          <Button className="border-none h-9.5 rounded-full bg-[#662DFC] hover:bg-[#682dfcd3]">
+            Пополнить
+          </Button>
+        }
+      </div>
     ),
   },
 ];
@@ -84,15 +87,21 @@ export const columns = [
 // ==========================
 //      DATA TABLE JSX
 // ==========================
-export function SearchTable({ data = [] }) {
+export function SearchTable() {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getSearch());
+  }, [dispatch]);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+  const { searchData } = useSelector((state) => state.search);
+  console.log(searchData);
+  // # eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/incompatible-library
   const table = useReactTable({
-    data,
+    data: searchData?.items ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -133,7 +142,7 @@ export function SearchTable({ data = [] }) {
                 ))}
               </TableHeader>
 
-              <TableBody>
+              <TableBody className=" text-[#342B4A]">
                 {table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
