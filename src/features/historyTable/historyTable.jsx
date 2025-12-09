@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -33,6 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/ui/kit/table";
+
+import { useSelector, useDispatch } from "react-redux";
+import { getSearch } from "@/entities/searchTable/api/searchApi.js";
 
 // ==========================
 // ============ STABLE COMPONENTS ============
@@ -82,15 +85,21 @@ export const columns = [
 // ==========================
 //      DATA TABLE JSX
 // ==========================
-export function HistoryTable({ data = [] }) {
+export function HistoryTable() {
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getSearch());
+  }, [dispatch]);
 
+  const { searchData } = useSelector((state) => state.search);
+  console.log(searchData);
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data,
+    data: searchData?.items ?? [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
