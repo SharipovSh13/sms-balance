@@ -3,7 +3,7 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
+  // getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
@@ -40,20 +40,31 @@ import { getSearch } from "@/entities/searchTable/api/searchApi.js";
 // ==========================
 // ============ STABLE COMPONENTS ============
 
-const DateCell = ({ row }) => (
-  <div className="capitalize">{row.getValue("date")}</div>
-);
+const DateCell = ({ row }) => {
+  const iso = row.getValue("purchased_at");
+  const date = new Date(iso);
 
-const TypeCell = ({ row }) => (
-  <div className="capitalize">{row.getValue("type_balance")}</div>
-);
+  const formatted = new Intl.DateTimeFormat("ru-RU", {
+    timeZone: "Asia/Dushanbe",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+
+  return <div>{formatted}</div>;
+};
 
 const TotalCell = ({ row }) => (
-  <div className="lowercase">{row.getValue("total")}</div>
+  <div className="lowercase">{`$ ${row.getValue("price_paid")}`}</div>
 );
 
 const CommentCell = ({ row }) => (
   <div className="capitalize">{row.getValue("comments")}</div>
+);
+const IdCell = ({ row }) => (
+  <div className="capitalize">{row.getValue("id")}</div>
 );
 
 //       COLUMNS (JSX)
@@ -61,24 +72,20 @@ const CommentCell = ({ row }) => (
 // eslint-disable-next-line react-refresh/only-export-components
 export const columns = [
   {
-    accessorKey: "date",
+    accessorKey: "id",
+    header: "Id",
+    cell: IdCell,
+  },
+  {
+    accessorKey: "purchased_at",
     header: "Дата",
     cell: DateCell,
   },
+
   {
-    accessorKey: "type_balance",
-    header: "Тип",
-    cell: TypeCell,
-  },
-  {
-    accessorKey: "total",
+    accessorKey: "price_paid",
     header: "Сумма",
     cell: TotalCell,
-  },
-  {
-    accessorKey: "comments",
-    header: "Комментарий",
-    cell: CommentCell,
   },
 ];
 
@@ -95,16 +102,16 @@ export function HistoryTable() {
     dispatch(getSearch());
   }, [dispatch]);
 
-  const { searchData } = useSelector((state) => state.search);
-  console.log(searchData);
+  const { historyData } = useSelector((state) => state.search);
+  console.log(historyData);
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
-    data: searchData?.items ?? [],
+    data: historyData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -121,7 +128,7 @@ export function HistoryTable() {
     <div className="w-full">
       <div className="flex flex-col space-y-6">
         <div className="">
-          <Card className="px-4 py-2 bg-white overflow-hidden rounded-xl shadow-2xs border">
+          <Card className="px-4 py-2 bg-white overflow-hidden rounded-xl shadow-2xs border h-[40vh]">
             <Table className="bg-white ">
               <TableHeader className="border-b-2 ">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -140,7 +147,7 @@ export function HistoryTable() {
                 ))}
               </TableHeader>
 
-              <TableBody>
+              <TableBody className="">
                 {table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
                     <TableRow
@@ -171,6 +178,11 @@ export function HistoryTable() {
               </TableBody>
             </Table>
           </Card>
+        </div>
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="text-muted-foreground flex-1 text-sm">
+            {table.getFilteredRowModel().rows.length} строк
+          </div>
         </div>
       </div>
     </div>

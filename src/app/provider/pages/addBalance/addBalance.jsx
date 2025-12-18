@@ -30,7 +30,7 @@ export default function AddBalance() {
   // }, [dispatch]);
 
   const { searchData } = useSelector((state) => state.search);
-  console.log(searchData);
+  // console.log(searchData);
 
   return (
     <div className="bg-[#F5F6FA] p-2">
